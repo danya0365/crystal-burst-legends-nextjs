@@ -1,0 +1,503 @@
+@import "tailwindcss";
+
+/* ============================================
+   Crystal Burst Legends - Design System
+   ============================================ */
+
+/* Theme Variables */
+:root {
+  /* Primary Colors - Crystal Blue */
+  --color-primary: #00d4ff;
+  --color-primary-dark: #0099cc;
+  --color-primary-light: #66e5ff;
+  
+  /* Secondary Colors - Gold */
+  --color-secondary: #ffd700;
+  --color-secondary-dark: #cc9900;
+  --color-secondary-light: #ffe666;
+  
+  /* Accent Colors */
+  --color-accent-red: #ff4757;
+  --color-accent-green: #2ed573;
+  --color-accent-purple: #a55eea;
+  
+  /* Background Colors - Light Mode */
+  --bg-primary: #0a1628;
+  --bg-secondary: #1a2a44;
+  --bg-tertiary: #2a3a54;
+  --bg-card: rgba(26, 42, 68, 0.95);
+  
+  /* Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #a0aec0;
+  --text-muted: #718096;
+  
+  /* Border Colors */
+  --border-color: rgba(0, 212, 255, 0.3);
+  --border-glow: rgba(0, 212, 255, 0.6);
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  --gradient-gold: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+  --gradient-dark: linear-gradient(180deg, #0a1628 0%, #1a2a44 100%);
+  --gradient-card: linear-gradient(135deg, rgba(26, 42, 68, 0.9) 0%, rgba(10, 22, 40, 0.95) 100%);
+  
+  /* Shadows */
+  --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+  
+  /* Rarity Colors */
+  --rarity-common: #a0aec0;
+  --rarity-uncommon: #2ed573;
+  --rarity-rare: #00d4ff;
+  --rarity-epic: #a55eea;
+  --rarity-legendary: #ffd700;
+  --rarity-mythic: #ff4757;
+}
+
+/* Dark Mode (Default for game) */
+.dark {
+  --bg-primary: #0a1628;
+  --bg-secondary: #1a2a44;
+  --bg-tertiary: #2a3a54;
+  --text-primary: #ffffff;
+  --text-secondary: #a0aec0;
+}
+
+/* Light Mode */
+.light {
+  --bg-primary: #f0f4f8;
+  --bg-secondary: #e2e8f0;
+  --bg-tertiary: #cbd5e0;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --border-color: rgba(0, 150, 200, 0.3);
+  --gradient-dark: linear-gradient(180deg, #f0f4f8 0%, #e2e8f0 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(240, 244, 248, 0.95) 100%);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ============================================
+   Layout Utilities
+   ============================================ */
+
+.layout-fullscreen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--gradient-dark);
+}
+
+.layout-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ============================================
+   Header Styles
+   ============================================ */
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: var(--gradient-card);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.game-logo {
+  font-size: 1.25rem;
+  font-weight: bold;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.player-level {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--gradient-gold);
+  color: #1a1a1a;
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   Resource Bar Styles
+   ============================================ */
+
+.resource-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.resource-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--bg-tertiary);
+  border-radius: 9999px;
+  border: 1px solid var(--border-color);
+}
+
+.resource-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.resource-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ============================================
+   Footer / Navigation Styles
+   ============================================ */
+
+.game-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.5rem;
+  background: var(--gradient-card);
+  border-top: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.nav-item:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--color-primary);
+}
+
+.nav-item.active .nav-icon {
+  filter: drop-shadow(0 0 8px var(--color-primary));
+}
+
+.nav-icon {
+  font-size: 1.5rem;
+}
+
+.nav-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+
+.game-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.game-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.game-button:hover::before {
+  left: 100%;
+}
+
+.game-button-primary {
+  background: var(--gradient-primary);
+  color: #0a1628;
+  box-shadow: var(--shadow-glow);
+}
+
+.game-button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+}
+
+.game-button-secondary {
+  background: var(--gradient-gold);
+  color: #1a1a1a;
+}
+
+.game-button-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+.game-button-danger {
+  background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%);
+  color: white;
+}
+
+.game-button-ghost {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.game-button-ghost:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--color-primary);
+}
+
+/* Button Sizes */
+.game-button-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.game-button-lg {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+}
+
+/* ============================================
+   Card Styles
+   ============================================ */
+
+.game-card {
+  background: var(--gradient-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-card);
+}
+
+.game-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-glow), var(--shadow-card);
+}
+
+/* Character Card */
+.character-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 1rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.character-card:hover {
+  transform: scale(1.05);
+}
+
+.character-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.character-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+}
+
+.character-card-name {
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+}
+
+.character-card-level {
+  font-size: 0.75rem;
+  color: var(--color-secondary);
+}
+
+/* Rarity Borders */
+.rarity-common { border: 2px solid var(--rarity-common); }
+.rarity-uncommon { border: 2px solid var(--rarity-uncommon); }
+.rarity-rare { border: 2px solid var(--rarity-rare); box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
+.rarity-epic { border: 2px solid var(--rarity-epic); box-shadow: 0 0 15px rgba(165, 94, 234, 0.3); }
+.rarity-legendary { border: 2px solid var(--rarity-legendary); box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+.rarity-mythic { border: 2px solid var(--rarity-mythic); box-shadow: 0 0 25px rgba(255, 71, 87, 0.5); }
+
+/* ============================================
+   Crystal Bubble Animation
+   ============================================ */
+
+.crystal-bubble-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.crystal-bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(0, 212, 255, 0.4), rgba(0, 150, 200, 0.1));
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  filter: blur(0.5px);
+  animation: float 8s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-5deg);
+  }
+  75% {
+    transform: translateY(-25px) rotate(3deg);
+  }
+}
+
+/* ============================================
+   Theme Toggle
+   ============================================ */
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+}
+
+.theme-toggle:hover {
+  background: var(--bg-secondary);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+.theme-toggle-icon {
+  font-size: 1.25rem;
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover .theme-toggle-icon {
+  transform: rotate(15deg);
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+.text-gradient-primary {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow-primary {
+  box-shadow: var(--shadow-glow);
+}
+
+.glass-effect {
+  background: rgba(26, 42, 68, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+}
+
+/* Scrollbar Styling (when needed) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-dark);
+}
