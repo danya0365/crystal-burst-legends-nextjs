@@ -24,6 +24,11 @@ const CampScene3D = dynamic(
   { ssr: false, loading: () => <SceneLoading name="Camping" color="#22C55E" /> }
 );
 
+const FantasyTownScene = dynamic(
+  () => import("./FantasyTownScene").then((mod) => ({ default: mod.FantasyTownScene })),
+  { ssr: false, loading: () => <SceneLoading name="Fantasy Town" color="#8B4513" /> }
+);
+
 // Scene loading component
 function SceneLoading({ name, color }: { name: string; color: string }) {
   return (
@@ -39,7 +44,7 @@ function SceneLoading({ name, color }: { name: string; color: string }) {
   );
 }
 
-export type SceneType = "crystal-field" | "industrial-city" | "camping";
+export type SceneType = "crystal-field" | "industrial-city" | "camping" | "fantasy-town";
 
 export const SCENES: { id: SceneType; name: string; icon: string; color: string; description: string }[] = [
   { 
@@ -63,6 +68,13 @@ export const SCENES: { id: SceneType; name: string; icon: string; color: string;
     color: "#22C55E",
     description: "Cozy pixel art camping"
   },
+  { 
+    id: "fantasy-town", 
+    name: "Fantasy Town", 
+    icon: "🏰", 
+    color: "#8B4513",
+    description: "Medieval fantasy village"
+  },
 ];
 
 interface SceneDisplayProps {
@@ -77,6 +89,8 @@ export function SceneDisplay({ currentScene }: SceneDisplayProps) {
       return <IndustrialCityScene />;
     case "camping":
       return <CampScene3D />;
+    case "fantasy-town":
+      return <FantasyTownScene />;
     default:
       return <CrystalFieldScene />;
   }
