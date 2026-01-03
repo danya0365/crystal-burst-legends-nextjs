@@ -1,8 +1,11 @@
 "use client";
 
+import { useProfileStore } from "@/src/infrastructure/stores/useProfileStore";
+import { GameButton } from "@/src/presentation/components/common/GameButton";
 import { CrystalBubbleAnimation } from "@/src/presentation/components/effects/CrystalBubbleAnimation";
 import { MainLayout } from "@/src/presentation/components/layout/MainLayout";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface MenuItem {
   id: string;
@@ -27,6 +30,19 @@ const menuItems: MenuItem[] = [
 ];
 
 export function MoreView() {
+  const router = useRouter();
+  const { logout, getActiveProfile } = useProfileStore();
+  const activeProfile = getActiveProfile();
+
+  const handleReturnToTitle = () => {
+    logout();
+    router.push("/");
+  };
+
+  const handleSwitchProfile = () => {
+    router.push("/profiles");
+  };
+
   return (
     <MainLayout>
       <div className="relative w-full h-full flex flex-col overflow-hidden">
@@ -40,6 +56,17 @@ export function MoreView() {
 
         {/* Menu Grid */}
         <div className="relative z-10 flex-1 overflow-y-auto p-4">
+          {/* Current Profile */}
+          {activeProfile && (
+            <div className="game-card p-4 mb-4 flex items-center gap-3">
+              <span className="text-3xl">{activeProfile.avatar}</span>
+              <div className="flex-1">
+                <p className="font-bold text-[var(--text-primary)]">{activeProfile.name}</p>
+                <p className="text-xs text-[var(--text-muted)]">Playing as</p>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {menuItems.map((item) => (
               <Link key={item.id} href={item.href}>
@@ -54,13 +81,23 @@ export function MoreView() {
             ))}
           </div>
 
+          {/* Account Actions */}
+          <div className="mt-6 space-y-3">
+            <GameButton variant="secondary" fullWidth onClick={handleSwitchProfile} icon="🔄">
+              Switch Profile
+            </GameButton>
+            <GameButton variant="ghost" fullWidth onClick={handleReturnToTitle} icon="🏠">
+              Return to Title
+            </GameButton>
+          </div>
+
           {/* Game Info */}
           <div className="mt-6 game-card p-4 text-center">
             <p className="text-[var(--text-muted)] text-sm">Crystal Burst Legends</p>
             <p className="text-xs text-[var(--text-muted)]">Version 1.0.0</p>
             <div className="flex justify-center gap-4 mt-3">
-              <a href="#" className="text-xs text-[var(--color-primary)]">Terms of Service</a>
-              <a href="#" className="text-xs text-[var(--color-primary)]">Privacy Policy</a>
+              <Link href="/terms" className="text-xs text-[var(--color-primary)]">Terms of Service</Link>
+              <Link href="/privacy" className="text-xs text-[var(--color-primary)]">Privacy Policy</Link>
             </div>
           </div>
         </div>

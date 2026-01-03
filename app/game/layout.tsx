@@ -11,7 +11,7 @@ export default function GameLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { hasProfile } = useProfileStore();
+  const { activeProfileId, profiles } = useProfileStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -19,10 +19,10 @@ export default function GameLayout({
   }, []);
 
   useEffect(() => {
-    if (mounted && !hasProfile) {
-      router.replace("/");
+    if (mounted && !activeProfileId) {
+      router.replace("/profiles");
     }
-  }, [mounted, hasProfile, router]);
+  }, [mounted, activeProfileId, router]);
 
   if (!mounted) {
     return (
@@ -34,7 +34,7 @@ export default function GameLayout({
     );
   }
 
-  if (!hasProfile) {
+  if (!activeProfileId) {
     return null;
   }
 

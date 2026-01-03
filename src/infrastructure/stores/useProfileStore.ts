@@ -11,35 +11,79 @@ export interface PlayerProfile {
 }
 
 interface ProfileState {
-  profile: PlayerProfile | null;
-  hasProfile: boolean;
-  createProfile: (name: string, avatar: string) => void;
-  updateProfile: (updates: Partial<PlayerProfile>) => void;
-  clearProfile: () => void;
+  profiles: PlayerProfile[];
+  activeProfileId: string | null;
+  
+  // Getters
+  getActiveProfile: () => PlayerProfile | null;
+  hasProfiles: () => boolean;
+  
+  // Actions
+  createProfile: (name: string, avatar: string) => PlayerProfile;
+  switchProfile: (id: string) => void;
+  deleteProfile: (id: string) => void;
+  updateProfile: (id: string, updates: Partial<PlayerProfile>) => void;
+  logout: () => void;
 }
 
 export const useProfileStore = create<ProfileState>()(
   persist(
-    (set) => ({
-      profile: null,
-      hasProfile: false,
+    (set, get) => ({
+      profiles: [],
+      activeProfileId: null,
+      
+      getActiveProfile: () => {
+        const { profiles, activeProfileId } = get();
+        return profiles.find((p) => p.id === activeProfileId) || null;
+      },
+      
+      hasProfiles: () => get().profiles.length > 0,
+      
       createProfile: (name, avatar) => {
-        const profile: PlayerProfile = {
-          id: `player_${Date.now()}`,
+        const newProfile: PlayerProfile = {
+          id: `profile_${Date.now()}`,
           name,
           avatar,
           createdAt: new Date().toISOString(),
         };
-        set({ profile, hasProfile: true });
-      },
-      updateProfile: (updates) =>
         set((state) => ({
-          profile: state.profile ? { ...state.profile, ...updates } : null,
-        })),
-      clearProfile: () => set({ profile: null, hasProfile: false }),
+          profiles: [...state.profiles, newProfile],
+          activeProfileId: newProfile.id,
+        }));
+        return newProfile;
+      },
+      
+      switchProfile: (id) => {
+        const { profiles } = get();
+        if (profiles.some((p) => p.id === id)) {
+          set({ activeProfileId: id });
+        }
+      },
+      
+      deleteProfile: (id) => {
+        set((state) => {
+          const newProfiles = state.profiles.filter((p) => p.id !== id);
+          const newActiveId = state.activeProfileId === id 
+            ? (newProfiles[0]?.id || null) 
+            : state.activeProfileId;
+          return { profiles: newProfiles, activeProfileId: newActiveId };
+        });
+      },
+      
+      updateProfile: (id, updates) => {
+        set((state) => ({
+          profiles: state.profiles.map((p) =>
+            p.id === id ? { ...p, ...updates } : p
+          ),
+        }));
+      },
+      
+      logout: () => {
+        set({ activeProfileId: null });
+      },
     }),
     {
-      name: "crystal-burst-profile",
+      name: "crystal-burst-profiles",
     }
   )
 );
