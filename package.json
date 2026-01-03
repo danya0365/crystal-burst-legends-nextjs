@@ -16,8 +16,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
+    "@types/three": "^0.182.0",
     "@uidotdev/usehooks": "^2.4.1",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
@@ -30,6 +33,7 @@
     "react-hook-form": "^7.69.0",
     "react-spring": "^10.0.3",
     "react-to-print": "^3.2.0",
+    "three": "^0.182.0",
     "zod": "^4.2.1",
     "zustand": "^5.0.9"
   },

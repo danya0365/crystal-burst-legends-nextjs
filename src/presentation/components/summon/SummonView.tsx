@@ -1,213 +1,320 @@
 "use client";
 
-import { Rarity } from "@/src/application/repositories/ICharacterRepository";
+import { GachaPullResult } from "@/src/application/repositories/IGachaRepository";
 import { GameButton } from "@/src/presentation/components/common/GameButton";
 import { CrystalBubbleAnimation } from "@/src/presentation/components/effects/CrystalBubbleAnimation";
 import { MainLayout } from "@/src/presentation/components/layout/MainLayout";
-import { SummonViewModel } from "@/src/presentation/presenters/summon/SummonPresenter";
-import { useSummonPresenter } from "@/src/presentation/presenters/summon/useSummonPresenter";
+import { GachaViewModel } from "@/src/presentation/presenters/gacha/GachaPresenter";
+import { useGachaPresenter } from "@/src/presentation/presenters/gacha/useGachaPresenter";
+import { useState } from "react";
 
 interface SummonViewProps {
-  initialViewModel?: SummonViewModel;
+  initialViewModel?: GachaViewModel;
 }
 
-const rarityColors: Record<Rarity, string> = {
-  common: "border-gray-400 bg-gray-400/20",
-  uncommon: "border-green-400 bg-green-400/20",
-  rare: "border-cyan-400 bg-cyan-400/20",
-  epic: "border-purple-400 bg-purple-400/20",
-  legendary: "border-yellow-400 bg-yellow-400/20",
-  mythic: "border-red-400 bg-red-400/20",
+const RARITY_COLORS: Record<string, string> = {
+  common: "from-gray-400 to-gray-600",
+  uncommon: "from-green-400 to-green-600",
+  rare: "from-blue-400 to-blue-600",
+  epic: "from-purple-400 to-purple-600",
+  legendary: "from-yellow-400 to-orange-500",
+  mythic: "from-red-400 to-pink-500",
 };
 
-export function SummonView({ initialViewModel }: SummonViewProps) {
-  const [state, actions] = useSummonPresenter(initialViewModel);
-  const viewModel = state.viewModel;
-  const selectedBanner = viewModel?.selectedBanner;
+const RARITY_GLOW: Record<string, string> = {
+  common: "",
+  uncommon: "shadow-green-500/30",
+  rare: "shadow-blue-500/50",
+  epic: "shadow-purple-500/50",
+  legendary: "shadow-yellow-500/60",
+  mythic: "shadow-red-500/70",
+};
 
-  if (state.loading && !viewModel) {
+function PullAnimation({ onComplete }: { onComplete: () => void }) {
+  return (
+    <div 
+      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+      onClick={onComplete}
+    >
+      <div className="text-center">
+        <div className="relative">
+          <span className="text-[150px] animate-spin inline-block">💎</span>
+          <div className="absolute inset-0 bg-gradient-radial from-cyan-500/20 to-transparent animate-pulse" />
+        </div>
+        <p className="text-white/50 text-sm mt-8 animate-pulse">Tap to skip</p>
+      </div>
+    </div>
+  );
+}
+
+function ResultCard({ result, index }: { result: GachaPullResult; index: number }) {
+  const { character, isNew, shardsEarned } = result;
+  const colorClass = RARITY_COLORS[character.rarity] || RARITY_COLORS.common;
+  const glowClass = RARITY_GLOW[character.rarity] || "";
+  
+  return (
+    <div 
+      className={`relative game-card p-4 text-center transform transition-all duration-500 hover:scale-105 ${glowClass} shadow-lg`}
+      style={{ animationDelay: `${index * 100}ms` }}
+    >
+      {isNew && (
+        <span className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-bold px-2 py-1 rounded-full animate-bounce z-10">
+          NEW!
+        </span>
+      )}
+      <div className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-br ${colorClass} flex items-center justify-center mb-3 shadow-lg`}>
+        <span className="text-4xl">
+          {character.rarity === "mythic" ? "👑" : 
+           character.rarity === "legendary" ? "⭐" :
+           character.rarity === "epic" ? "💎" :
+           character.rarity === "rare" ? "✨" :
+           character.rarity === "uncommon" ? "🌟" : "⚪"}
+        </span>
+      </div>
+      <h3 className="font-bold text-[var(--text-primary)] text-sm truncate">{character.name}</h3>
+      <p className={`text-xs capitalize bg-gradient-to-r ${colorClass} bg-clip-text text-transparent font-bold`}>
+        {character.rarity}
+      </p>
+      {!isNew && shardsEarned > 0 && (
+        <p className="text-xs text-[var(--text-muted)] mt-1">+{shardsEarned} shards</p>
+      )}
+    </div>
+  );
+}
+
+function ResultsModal({ results, onClose }: { results: GachaPullResult[]; onClose: () => void }) {
+  // Sort by rarity (best first)
+  const rarityOrder = ["mythic", "legendary", "epic", "rare", "uncommon", "common"];
+  const sorted = [...results].sort((a, b) => 
+    rarityOrder.indexOf(a.character.rarity) - rarityOrder.indexOf(b.character.rarity)
+  );
+  
+  const newCount = results.filter(r => r.isNew).length;
+  const hasLegendary = results.some(r => r.character.rarity === "legendary" || r.character.rarity === "mythic");
+  
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="game-card max-w-3xl w-full p-6 my-8">
+        <div className="text-center mb-6">
+          <h2 className={`text-2xl font-bold ${hasLegendary ? "text-gradient-gold" : "text-gradient-primary"}`}>
+            {hasLegendary ? "🎉 Legendary Pull! 🎉" : "Summon Results"}
+          </h2>
+          <p className="text-[var(--text-secondary)]">
+            {newCount > 0 ? `${newCount} new character${newCount > 1 ? "s" : ""}!` : "Duplicates converted to shards"}
+          </p>
+        </div>
+        
+        <div className={`grid gap-4 ${results.length === 1 ? "grid-cols-1 max-w-xs mx-auto" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-5"}`}>
+          {sorted.map((result, i) => (
+            <ResultCard key={`${result.character.id}-${i}`} result={result} index={i} />
+          ))}
+        </div>
+        
+        <div className="mt-6 text-center">
+          <GameButton variant="primary" onClick={onClose}>
+            Continue
+          </GameButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function SummonView({ initialViewModel }: SummonViewProps) {
+  const [state, actions] = useGachaPresenter(initialViewModel);
+  const { viewModel, loading, error, isPulling, pullResults, showResults, selectedBanner } = state;
+  const [showAnimation, setShowAnimation] = useState(false);
+  const [pendingResults, setPendingResults] = useState<GachaPullResult[]>([]);
+
+  if (loading) {
     return (
       <MainLayout>
-        <div className="relative w-full h-full flex items-center justify-center">
-          <CrystalBubbleAnimation count={15} />
-          <div className="text-center z-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)] mx-auto mb-4" />
-            <p className="text-[var(--text-secondary)]">Loading Summon...</p>
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--color-primary)]" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error && !viewModel) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <p className="text-red-400 mb-4">{error}</p>
+            <GameButton variant="primary" onClick={actions.loadData}>Retry</GameButton>
           </div>
         </div>
       </MainLayout>
     );
   }
 
+  const handlePull = async (type: "single" | "multi") => {
+    setShowAnimation(true);
+    
+    try {
+      if (type === "single") {
+        await actions.pullSingle();
+      } else {
+        await actions.pullMulti();
+      }
+    } catch (e) {
+      setShowAnimation(false);
+    }
+  };
+
+  const handleAnimationComplete = () => {
+    setShowAnimation(false);
+  };
+
+  const canAffordSingle = viewModel ? viewModel.crystals >= viewModel.singleCost.crystals : false;
+  const canAffordMulti = viewModel ? viewModel.crystals >= viewModel.multiCost.crystals : false;
+
   return (
     <MainLayout>
       <div className="relative w-full h-full flex flex-col overflow-hidden">
-        <CrystalBubbleAnimation count={20} />
+        <CrystalBubbleAnimation count={15} />
 
         {/* Header */}
         <div className="relative z-10 p-4 border-b border-[var(--border-color)]">
-          <h1 className="text-2xl font-bold text-gradient-gold">✨ Summon</h1>
-          <div className="flex gap-4 mt-2 text-sm">
-            <span className="flex items-center gap-1">
-              <span>💎</span>
-              <span className="text-[var(--text-secondary)]">Crystals:</span>
-              <span className="text-[var(--text-primary)] font-bold">2,500</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <span>🎫</span>
-              <span className="text-[var(--text-secondary)]">Tickets:</span>
-              <span className="text-[var(--text-primary)] font-bold">{viewModel?.stats.currentTickets}</span>
-            </span>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gradient-primary">Summon</h1>
+              <p className="text-sm text-[var(--text-secondary)]">Collect powerful heroes!</p>
+            </div>
+            <div className="flex items-center gap-2 bg-[var(--bg-tertiary)] px-3 py-2 rounded-full">
+              <span className="text-lg">💎</span>
+              <span className="font-bold text-[var(--color-primary)]">{viewModel?.crystals.toLocaleString()}</span>
+            </div>
           </div>
         </div>
 
-        {/* Banner Selection */}
-        <div className="relative z-10 px-4 py-2 flex gap-2 overflow-x-auto border-b border-[var(--border-color)]">
-          {viewModel?.banners.map((banner) => (
-            <button
-              key={banner.id}
-              onClick={() => actions.selectBanner(banner)}
-              className={`px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-all ${
-                selectedBanner?.id === banner.id
-                  ? "bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-black font-bold"
-                  : "bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-              }`}
-            >
-              {banner.type === "featured" && "🔥 "}
-              {banner.type === "limited" && "⏰ "}
-              {banner.name}
-            </button>
-          ))}
-        </div>
+        {/* Content */}
+        <div className="relative z-10 flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Banner Selection */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-bold text-[var(--text-secondary)]">Select Banner</h3>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {viewModel?.banners.map((banner) => (
+                <button
+                  key={banner.id}
+                  onClick={() => actions.selectBanner(banner)}
+                  className={`game-card p-3 min-w-[200px] text-left transition-all ${
+                    selectedBanner?.id === banner.id 
+                      ? "ring-2 ring-[var(--color-primary)] scale-105" 
+                      : "opacity-70 hover:opacity-100"
+                  }`}
+                >
+                  <h4 className="font-bold text-[var(--text-primary)]">{banner.name}</h4>
+                  <p className="text-xs text-[var(--text-muted)]">{banner.description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
 
-        {/* Selected Banner Info */}
-        <div className="relative z-10 flex-1 overflow-y-auto p-4">
+          {/* Featured Banner Display */}
           {selectedBanner && (
-            <div className="game-card p-6 text-center">
-              <h2 className="text-xl font-bold text-gradient-primary mb-2">{selectedBanner.name}</h2>
+            <div className="game-card p-6 text-center bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)]">
+              <div className="mb-4">
+                <span className="text-6xl animate-pulse">✨</span>
+              </div>
+              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">{selectedBanner.name}</h2>
               <p className="text-[var(--text-secondary)] mb-4">{selectedBanner.description}</p>
-
+              
               {/* Pity Counter */}
-              <div className="mb-4 p-3 bg-[var(--bg-tertiary)] rounded-lg">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-[var(--text-secondary)]">Pity Counter</span>
-                  <span className="text-[var(--color-primary)]">{selectedBanner.currentPity} / {selectedBanner.pityCount}</span>
-                </div>
-                <div className="h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)]"
-                    style={{ width: `${(selectedBanner.currentPity / selectedBanner.pityCount) * 100}%` }}
-                  />
-                </div>
-                <p className="text-xs text-[var(--text-muted)] mt-1">
-                  Guaranteed {selectedBanner.guaranteedRarity || "legendary"} at {selectedBanner.pityCount} summons
-                </p>
-              </div>
-
-              {/* Rate Up Characters */}
-              {selectedBanner.rateUp.length > 0 && (
-                <div className="mb-4 p-3 bg-[var(--bg-tertiary)] rounded-lg">
-                  <h3 className="text-sm font-bold text-[var(--color-secondary)] mb-2">🔥 Rate Up</h3>
-                  {selectedBanner.rateUp.map((ru) => (
-                    <div key={ru.characterId} className="flex justify-between items-center">
-                      <span className="font-bold">{ru.name}</span>
-                      <span className={`text-xs capitalize ${ru.rarity === "mythic" ? "text-red-400" : "text-yellow-400"}`}>
-                        {ru.rarity} ({ru.rate}%)
-                      </span>
-                    </div>
-                  ))}
+              {viewModel?.pityInfo && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-center gap-2 text-sm">
+                    <span className="text-[var(--text-muted)]">Pity:</span>
+                    <span className="font-bold text-[var(--color-primary)]">{viewModel.pityInfo.currentPity}</span>
+                    <span className="text-[var(--text-muted)]">/ {viewModel.pityInfo.hardPity}</span>
+                  </div>
+                  <div className="w-full max-w-xs mx-auto h-2 bg-[var(--bg-tertiary)] rounded-full mt-2 overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] transition-all duration-300"
+                      style={{ width: `${(viewModel.pityInfo.currentPity / viewModel.pityInfo.hardPity) * 100}%` }}
+                    />
+                  </div>
+                  {viewModel.pityInfo.currentPity >= viewModel.pityInfo.softPityStart && (
+                    <p className="text-xs text-yellow-400 mt-1">⬆️ Soft Pity Active!</p>
+                  )}
                 </div>
               )}
-
-              {/* Summon Animation Area */}
-              {state.isSummoning && (
-                <div className="relative h-40 mb-4 flex items-center justify-center">
-                  <div className="animate-pulse text-6xl">✨</div>
-                  <div className="absolute inset-0 bg-gradient-radial from-[var(--color-primary)]/20 to-transparent animate-ping" />
-                </div>
-              )}
-
-              {/* Summon Buttons */}
-              <div className="flex gap-4 justify-center">
-                <GameButton
-                  variant="ghost"
-                  onClick={() => actions.summonSingle(selectedBanner.id)}
-                  disabled={state.isSummoning}
-                >
-                  {selectedBanner.currency === "crystal" ? "💎" : "🎫"} x{selectedBanner.costPerSingle}
-                  <span className="block text-xs">Single</span>
-                </GameButton>
-                <GameButton
-                  variant="primary"
-                  onClick={() => actions.summonMulti(selectedBanner.id)}
-                  disabled={state.isSummoning}
-                >
-                  {selectedBanner.currency === "crystal" ? "💎" : "🎫"} x{selectedBanner.costPerMulti}
-                  <span className="block text-xs">10x Multi</span>
-                </GameButton>
-              </div>
             </div>
           )}
 
-          {/* Stats */}
-          <div className="mt-4 game-card p-4">
-            <h3 className="text-sm font-bold text-[var(--text-secondary)] mb-2">📊 Your Stats</h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold text-[var(--text-primary)]">{viewModel?.stats.totalSummons}</p>
-                <p className="text-xs text-[var(--text-muted)]">Total Summons</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-yellow-400">{viewModel?.stats.legendaryPulled}</p>
-                <p className="text-xs text-[var(--text-muted)]">Legendary</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-red-400">{viewModel?.stats.mythicPulled}</p>
-                <p className="text-xs text-[var(--text-muted)]">Mythic</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Summon Result Modal */}
-        {state.summonResult && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
-            <div className="game-card w-full max-w-lg max-h-[90vh] overflow-y-auto">
-              <h2 className="text-2xl font-bold text-center text-gradient-gold mb-4">✨ Summon Results</h2>
-              
-              <div className="grid grid-cols-5 gap-2 mb-4">
-                {state.summonResult.characters.map((sr, i) => (
-                  <div
-                    key={i}
-                    className={`aspect-square rounded-lg border-2 flex flex-col items-center justify-center p-1 ${rarityColors[sr.character.rarity]}`}
-                  >
-                    <span className="text-2xl">👤</span>
-                    <span className="text-[8px] text-center truncate w-full">{sr.character.name}</span>
-                    {sr.isNew && <span className="text-[8px] text-green-400">NEW!</span>}
-                  </div>
-                ))}
-              </div>
-
-              {state.summonResult.pityReached && (
-                <div className="text-center mb-4 text-yellow-400 font-bold">
-                  🎉 Pity Reached! Guaranteed Rare!
+          {/* Rates Info */}
+          <details className="game-card p-4">
+            <summary className="cursor-pointer font-bold text-[var(--text-secondary)]">📊 Drop Rates</summary>
+            <div className="grid grid-cols-3 gap-2 mt-3 text-sm">
+              {viewModel && Object.entries(viewModel.rates).map(([rarity, rate]) => (
+                <div key={rarity} className="text-center">
+                  <span className={`capitalize font-bold bg-gradient-to-r ${RARITY_COLORS[rarity]} bg-clip-text text-transparent`}>
+                    {rarity}
+                  </span>
+                  <p className="text-[var(--text-muted)]">{(rate * 100).toFixed(1)}%</p>
                 </div>
-              )}
-
-              <GameButton variant="primary" fullWidth onClick={actions.clearResult}>
-                Continue
-              </GameButton>
+              ))}
             </div>
-          </div>
-        )}
+          </details>
 
-        {state.error && (
-          <div className="fixed bottom-20 right-4 bg-red-500 text-white px-4 py-2 rounded-lg z-50">
-            {state.error}
-            <button onClick={() => actions.setError(null)} className="ml-2">✕</button>
+          {/* Pull Buttons */}
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => handlePull("single")}
+              disabled={!canAffordSingle || isPulling}
+              className={`game-card p-4 text-center transition-all ${
+                canAffordSingle && !isPulling 
+                  ? "hover:scale-105 cursor-pointer" 
+                  : "opacity-50 cursor-not-allowed"
+              }`}
+            >
+              <span className="text-3xl block mb-2">💎</span>
+              <h3 className="font-bold text-[var(--text-primary)]">Single Pull</h3>
+              <p className="text-[var(--color-primary)] font-bold">
+                {viewModel?.singleCost.crystals} Crystals
+              </p>
+            </button>
+            
+            <button
+              onClick={() => handlePull("multi")}
+              disabled={!canAffordMulti || isPulling}
+              className={`game-card p-4 text-center transition-all relative ${
+                canAffordMulti && !isPulling 
+                  ? "hover:scale-105 cursor-pointer ring-2 ring-[var(--color-secondary)]" 
+                  : "opacity-50 cursor-not-allowed"
+              }`}
+            >
+              {viewModel?.multiCost.discount && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  -{viewModel.multiCost.discount}%
+                </span>
+              )}
+              <span className="text-3xl block mb-2">💎×10</span>
+              <h3 className="font-bold text-gradient-gold">10x Pull</h3>
+              <p className="text-[var(--color-secondary)] font-bold">
+                {viewModel?.multiCost.crystals} Crystals
+              </p>
+            </button>
           </div>
-        )}
+
+          {error && (
+            <div className="game-card p-4 bg-red-500/20 border-red-500 text-center">
+              <p className="text-red-400">{error}</p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Pull Animation */}
+      {showAnimation && isPulling && (
+        <PullAnimation onComplete={handleAnimationComplete} />
+      )}
+
+      {/* Results Modal */}
+      {showResults && pullResults.length > 0 && !showAnimation && (
+        <ResultsModal results={pullResults} onClose={actions.closeResults} />
+      )}
     </MainLayout>
   );
 }

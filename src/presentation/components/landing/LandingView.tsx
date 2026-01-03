@@ -1,11 +1,18 @@
 "use client";
 
+/**
+ * LandingView
+ * Landing page with 3D crystal, react-spring animations, and features
+ */
+
 import { GameButton } from "@/src/presentation/components/common/GameButton";
 import { ThemeToggle } from "@/src/presentation/components/common/ThemeToggle";
+import { Crystal3DSceneWrapper } from "@/src/presentation/components/effects/Crystal3DSceneWrapper";
 import { CrystalBubbleAnimation } from "@/src/presentation/components/effects/CrystalBubbleAnimation";
 import { LandingViewModel } from "@/src/presentation/presenters/landing/LandingPresenter";
 import { useLandingPresenter } from "@/src/presentation/presenters/landing/useLandingPresenter";
 import Link from "next/link";
+import { animated, config, useSpring, useSprings } from "react-spring";
 
 interface LandingViewProps {
   initialViewModel?: LandingViewModel;
@@ -13,6 +20,39 @@ interface LandingViewProps {
 
 export function LandingView({ initialViewModel }: LandingViewProps) {
   const { viewModel, loading, error } = useLandingPresenter(initialViewModel);
+
+  // Hero animations
+  const heroSpring = useSpring({
+    from: { opacity: 0, transform: "translateY(-30px)" },
+    to: { opacity: 1, transform: "translateY(0px)" },
+    config: config.gentle,
+    delay: 200,
+  });
+
+  const crystalSpring = useSpring({
+    from: { opacity: 0, transform: "scale(0.8)" },
+    to: { opacity: 1, transform: "scale(1)" },
+    config: config.wobbly,
+    delay: 400,
+  });
+
+  const buttonsSpring = useSpring({
+    from: { opacity: 0, transform: "translateY(20px)" },
+    to: { opacity: 1, transform: "translateY(0px)" },
+    config: config.gentle,
+    delay: 600,
+  });
+
+  // Feature cards staggered animation
+  const featureSprings = useSprings(
+    viewModel?.content?.features?.length ?? 6,
+    (viewModel?.content?.features ?? Array(6).fill(null)).map((_, index) => ({
+      from: { opacity: 0, transform: "translateY(30px) scale(0.95)" },
+      to: { opacity: 1, transform: "translateY(0px) scale(1)" },
+      config: config.gentle,
+      delay: 800 + index * 100,
+    }))
+  );
 
   if (loading) {
     return (
@@ -57,21 +97,28 @@ export function LandingView({ initialViewModel }: LandingViewProps) {
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero Section with 3D Crystal */}
       <section className="relative z-10 flex flex-col items-center justify-center min-h-[90vh] px-4 text-center py-20">
-        <div className="mb-8 animate-bounce">
-          <span className="text-7xl md:text-9xl">🔮</span>
-        </div>
-        <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-gradient-primary mb-4">
-          {content.heroTitle}
-        </h1>
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-gold mb-6">
-          {content.heroSubtitle}
-        </h2>
-        <p className="text-lg md:text-xl text-[var(--text-secondary)] max-w-xl mb-8 px-4">
-          {content.heroDescription}
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
+        {/* 3D Crystal */}
+        <animated.div style={crystalSpring} className="w-40 h-40 md:w-56 md:h-56 mb-8">
+          <Crystal3DSceneWrapper className="w-full h-full" />
+        </animated.div>
+
+        {/* Title */}
+        <animated.div style={heroSpring}>
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-gradient-primary mb-4">
+            {content.heroTitle}
+          </h1>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-gold mb-6">
+            {content.heroSubtitle}
+          </h2>
+          <p className="text-lg md:text-xl text-[var(--text-secondary)] max-w-xl mb-8 px-4 mx-auto">
+            {content.heroDescription}
+          </p>
+        </animated.div>
+
+        {/* Buttons */}
+        <animated.div style={buttonsSpring} className="flex flex-col sm:flex-row gap-4">
           <Link href="/profiles">
             <GameButton variant="primary" size="lg" icon="🎮">
               Start Playing
@@ -82,7 +129,7 @@ export function LandingView({ initialViewModel }: LandingViewProps) {
               Learn More
             </GameButton>
           </a>
-        </div>
+        </animated.div>
         
         {/* Scroll indicator */}
         <div className="absolute bottom-8 animate-bounce">
@@ -99,12 +146,16 @@ export function LandingView({ initialViewModel }: LandingViewProps) {
           Experience the ultimate gacha RPG with stunning visuals and deep gameplay
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
-          {content.features.map((f) => (
-            <div key={f.id} className="game-card p-6 text-center hover:scale-105 transition-transform">
+          {content.features.map((f, index) => (
+            <animated.div
+              key={f.id}
+              style={featureSprings[index]}
+              className="game-card p-6 text-center hover:scale-105 transition-transform"
+            >
               <span className="text-4xl md:text-5xl mb-4 block">{f.icon}</span>
               <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] mb-2">{f.title}</h3>
               <p className="text-sm md:text-base text-[var(--text-secondary)]">{f.description}</p>
-            </div>
+            </animated.div>
           ))}
         </div>
       </section>
