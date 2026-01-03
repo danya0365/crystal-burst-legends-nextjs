@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./fonts.css";
 
 /* ============================================
    Crystal Burst Legends - Design System
@@ -6,6 +7,7 @@
 
 /* Theme Variables */
 :root {
+  
   /* Primary Colors - Crystal Blue */
   --color-primary: #00d4ff;
   --color-primary-dark: #0099cc;
@@ -91,7 +93,7 @@ html, body {
   overflow: hidden;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'MiSans Thai', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* ============================================
