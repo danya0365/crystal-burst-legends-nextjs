@@ -41,17 +41,17 @@ export function HomeView() {
 
           {/* Quick Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/story">
+            <Link href="/game/story">
               <GameButton variant="primary" size="lg" icon="📖">
                 Story Mode
               </GameButton>
             </Link>
-            <Link href="/pvp">
+            <Link href="/game/pvp">
               <GameButton variant="secondary" size="lg" icon="⚔️">
                 PVP Battle
               </GameButton>
             </Link>
-            <Link href="/summon">
+            <Link href="/game/summon">
               <GameButton variant="ghost" size="lg" icon="✨">
                 Summon
               </GameButton>

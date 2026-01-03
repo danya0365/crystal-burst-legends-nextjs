@@ -11,12 +11,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: "home", label: "Home", icon: "🏠", href: "/" },
-  { id: "characters", label: "Characters", icon: "👥", href: "/characters" },
-  { id: "story", label: "Story", icon: "📖", href: "/story" },
-  { id: "pvp", label: "PVP", icon: "⚔️", href: "/pvp" },
-  { id: "shop", label: "Shop", icon: "🛒", href: "/shop" },
-  { id: "more", label: "More", icon: "☰", href: "/more" },
+  { id: "home", label: "Home", icon: "🏠", href: "/game" },
+  { id: "characters", label: "Characters", icon: "👥", href: "/game/characters" },
+  { id: "story", label: "Story", icon: "📖", href: "/game/story" },
+  { id: "pvp", label: "PVP", icon: "⚔️", href: "/game/pvp" },
+  { id: "shop", label: "Shop", icon: "🛒", href: "/game/shop" },
+  { id: "more", label: "More", icon: "☰", href: "/game/more" },
 ];
 
 /**
@@ -27,8 +27,8 @@ export function MainFooter() {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/";
+    if (href === "/game") {
+      return pathname === "/game";
     }
     return pathname.startsWith(href);
   };

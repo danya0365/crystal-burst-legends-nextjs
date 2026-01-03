@@ -1,11 +1,11 @@
-import { HomeView } from "@/src/presentation/components/home/HomeView";
+import { ProfileSetupView } from "@/src/presentation/components/profile-setup/ProfileSetupView";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Crystal Burst Legends - Home",
-  description: "Start your journey in Crystal Burst Legends!",
+  title: "Welcome | Crystal Burst Legends",
+  description: "Create your hero and start your adventure",
 };
 
-export default function Home() {
-  return <HomeView />;
+export default function WelcomePage() {
+  return <ProfileSetupView />;
 }
