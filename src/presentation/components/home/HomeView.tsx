@@ -2,11 +2,11 @@
 
 /**
  * HomeView
- * Main game home screen with 3D pixel art camping scene and team characters
+ * Main game home screen with 3D Crystal Field scene using Kenney models
  */
 
 import { GameButton } from "@/src/presentation/components/common/GameButton";
-import { CampScene3DWrapper, type CharacterConfig } from "@/src/presentation/components/effects/CampScene3DWrapper";
+import { SceneDisplay, SceneSwitcher, type SceneType } from "@/src/presentation/components/effects/SceneSelector";
 import { MainLayout } from "@/src/presentation/components/layout/MainLayout";
 import type { HomeViewModel } from "@/src/presentation/presenters/home/HomePresenter";
 import { useHomePresenter } from "@/src/presentation/presenters/home/useHomePresenter";
@@ -14,68 +14,24 @@ import Link from "next/link";
 import { useState } from "react";
 import { animated } from "react-spring";
 
-// Default team configuration - can be customized
-const DEFAULT_TEAM: CharacterConfig[] = [
-  {
-    id: "1",
-    name: "Arthur",
-    type: "warrior",
-    position: [-1.2, 0, 0.8],
-    color: "#4A5568",
-    accentColor: "#1A202C",
-  },
-  {
-    id: "2",
-    name: "Merlin",
-    type: "mage",
-    position: [1.2, 0, 0.8],
-    color: "#5B21B6",
-    accentColor: "#7C3AED",
-  },
-  {
-    id: "3",
-    name: "Robin",
-    type: "archer",
-    position: [-0.8, 0, -1],
-    color: "#065F46",
-    accentColor: "#047857",
-  },
-  {
-    id: "4",
-    name: "Clara",
-    type: "healer",
-    position: [0.8, 0, -1],
-    color: "#FAFAFA",
-    accentColor: "#FCD34D",
-  },
-  {
-    id: "5",
-    name: "Shadow",
-    type: "rogue",
-    position: [0, 0, 1.5],
-    color: "#1F2937",
-    accentColor: "#374151",
-  },
-];
-
 interface HomeViewProps {
   initialViewModel?: HomeViewModel;
-  team?: CharacterConfig[];
 }
 
-export function HomeView({ initialViewModel, team }: HomeViewProps) {
+export function HomeView({ initialViewModel }: HomeViewProps) {
   const { viewModel, isLoading, heroSpring, actionSprings } =
     useHomePresenter(initialViewModel);
-  const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
-  const currentTeam = team || DEFAULT_TEAM;
+    
+  // Manage scene state here to allow placing the switcher in a safe UI layer
+  const [currentScene, setCurrentScene] = useState<SceneType>("industrial-city");
 
   if (isLoading || !viewModel) {
     return (
       <MainLayout>
-        <div className="w-full h-full flex items-center justify-center bg-[#0a1628]">
+        <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-[#1a0a2e] to-[#2d1b4e]">
           <div className="text-center">
-            <div className="text-6xl animate-pulse mb-4">🏕️</div>
-            <p className="text-[var(--text-secondary)]">Loading camp...</p>
+            <div className="text-6xl animate-pulse mb-4">💎</div>
+            <p className="text-purple-300">Loading Crystal Field...</p>
           </div>
         </div>
       </MainLayout>
@@ -85,13 +41,15 @@ export function HomeView({ initialViewModel, team }: HomeViewProps) {
   return (
     <MainLayout>
       <div className="relative w-full h-full flex flex-col overflow-hidden">
-        {/* 3D Camping Scene Background */}
+        {/* 3D Scene Background - Controlled */}
         <div className="absolute inset-0 z-0">
-          <CampScene3DWrapper
-            team={currentTeam}
-            selectedCharacterId={selectedCharacterId || undefined}
-            onCharacterClick={setSelectedCharacterId}
-          />
+          <SceneDisplay currentScene={currentScene} />
+        </div>
+
+        {/* Scene Selector - Floating on top of everything (z-50) */}
+        <div className="absolute top-20 right-4 z-50 md:top-24">
+           {/* Positioned below standard header height to be safe */}
+           <SceneSwitcher currentScene={currentScene} onSceneChange={setCurrentScene} />
         </div>
 
         {/* Overlay UI */}
@@ -104,35 +62,28 @@ export function HomeView({ initialViewModel, team }: HomeViewProps) {
             <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg mb-1">
               {viewModel.hero.title}
             </h1>
-            <p className="text-lg text-[var(--color-secondary)] drop-shadow-md">
+            <p className="text-lg text-purple-300 drop-shadow-md">
               {viewModel.hero.subtitle}
             </p>
           </animated.div>
 
-          {/* Team Info Panel */}
+          {/* Game Stats Panel */}
           <div className="absolute top-20 left-4 pointer-events-auto">
-            <div className="glass-effect rounded-lg p-3 max-w-[200px]">
-              <h3 className="text-sm font-bold text-white mb-2">⚔️ Team</h3>
-              <div className="space-y-1">
-                {currentTeam.map((char, index) => (
-                  <div
-                    key={char.id}
-                    className={`flex items-center gap-2 px-2 py-1 rounded text-xs cursor-pointer transition-colors ${
-                      selectedCharacterId === char.id
-                        ? "bg-[var(--color-primary)]/30"
-                        : "hover:bg-white/10"
-                    }`}
-                    onClick={() => setSelectedCharacterId(char.id)}
-                  >
-                    <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] bg-gradient-to-br from-gray-600 to-gray-800">
-                      {index + 1}
-                    </span>
-                    <span className="text-white">{char.name}</span>
-                    <span className="text-[var(--text-muted)] capitalize text-[10px]">
-                      {char.type}
-                    </span>
-                  </div>
-                ))}
+            <div className="glass-effect rounded-lg p-3 max-w-[180px] bg-black/40 backdrop-blur-md border border-purple-500/30">
+              <h3 className="text-sm font-bold text-white mb-2">💎 Crystal Stats</h3>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-purple-300">Crystals</span>
+                  <span className="text-cyan-400 font-bold">1,250</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-purple-300">Towers</span>
+                  <span className="text-cyan-400 font-bold">4</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-purple-300">Enemies</span>
+                  <span className="text-red-400 font-bold">3</span>
+                </div>
               </div>
             </div>
           </div>
@@ -146,19 +97,19 @@ export function HomeView({ initialViewModel, team }: HomeViewProps) {
             {viewModel.news.map((newsItem) => (
               <div
                 key={newsItem.id}
-                className="glass-effect rounded-lg p-3 mb-4 max-w-md mx-auto"
+                className="glass-effect rounded-lg p-3 mb-4 max-w-md mx-auto bg-black/40 backdrop-blur-md border border-purple-500/30"
               >
                 <div className="flex items-center justify-between mb-1">
                   <h3 className="text-sm font-bold text-white">
                     {newsItem.title}
                   </h3>
                   {newsItem.isNew && (
-                    <span className="text-xs text-[var(--color-primary)] bg-[var(--color-primary)]/20 px-2 py-0.5 rounded-full">
+                    <span className="text-xs text-purple-300 bg-purple-500/30 px-2 py-0.5 rounded-full">
                       NEW
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[var(--text-secondary)]">
+                <p className="text-xs text-purple-200/70">
                   {newsItem.content}
                 </p>
               </div>
